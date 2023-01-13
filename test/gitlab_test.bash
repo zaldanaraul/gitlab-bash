@@ -57,15 +57,19 @@ setup() {
 }
 
 @test "create_group returns the group id of the newly created group" {
-  skip "Skipping for Dev"
   # Generate group name
   local GROUP_NAME=$(echo $RANDOM | md5sum | head -c 20)
 
   # Create group on Gitlab
-  create_group "$GROUP_NAME" "$GITLAB_HOSTNAME" "$GITLAB_TOKEN"
+  run create_group "$GROUP_NAME" "$GITLAB_HOSTNAME" "$GITLAB_TOKEN"
 
   # Make sure group exists on Gitlab instance
   group_exists "$GROUP_NAME" "$GITLAB_HOSTNAME" "$GITLAB_TOKEN"
+
+  # Get group id of the newly created group
+  group_id=$(get_group_id "$GROUP_NAME" "$GITLAB_HOSTNAME" "$GITLAB_TOKEN")
+
+  assert_output "$group_id" 
 }
 
 @test "delete_group deletes a gitlab group with a given name" {

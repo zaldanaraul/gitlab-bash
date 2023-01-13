@@ -11,27 +11,9 @@ function group_exists() {
 #   Group name
 #   Hostname of Gitlab instance
 #   Gitlab access token
-
-#  result=$(curl \
-#            --silent \
-#            --show-error \
-#            --request GET \
-#            --header "PRIVATE-TOKEN: ${3}" \
-#            --header "Content-Type: application/json" \
-#            "https://${2}/api/v4/groups?search=${1}" \
-#            | jq -j ".[].name" \
-#        )
-#  echo "$result" "${1}"
-#  if [[ "$result" == "${1}" ]]; then
-#    return 0
-#  else
-#    echo "Group ${1} does not exist on ${2}"
-#    return 1
-#  fi
 result="$(get_group_id "${1}" "${2}" "${3}")"
 [[ "$result" == "null" ]] && return 1
 return 0
-
 }
 
 function get_group_id {
@@ -70,7 +52,7 @@ function create_group {
 #   User token to use for Gitlab authentication
 # Returns:
 #   _group_id: group id of the newly created group
-  curl \
+  response=$(curl \
     --silent \
     --show-error \
     --request POST \
@@ -78,7 +60,9 @@ function create_group {
     --header "Content-Type: application/json" \
     --data "$(printf '{"path": "%s", "name": "%s"}' ${1} ${1})" \
     "https://${2}/api/v4/groups?search=${1}" \
-#    || { echo "Failed to create Gitlab group ${1} on ${2}"; exit 1}
+    ) || { echo "Failed to create Gitlab group ${1} on ${2}"; exit 1; }
+  group_id=$(echo $response | jq ".id")
+  echo $group_id
 }
 
 
